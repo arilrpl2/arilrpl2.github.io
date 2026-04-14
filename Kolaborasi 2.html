@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aneka Sosis - Lezat & Praktis</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* --- KONFIGURASI DASAR --- */
+        :root {
+            --primary: #8B0000;
+            --secondary: #EAB308;
+            --light: #FFFBF0;
+            --dark: #1F2937;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; background-color: var(--light); scroll-behavior: smooth; overflow-x: hidden; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+        /* --- TOAST NOTIFICATION --- */
+        #toast {
+            visibility: hidden;
+            min-width: 280px;
+            background-color: var(--dark);
+            color: #fff;
+            text-align: center;
+            border-radius: 10px;
+            padding: 16px;
+            position: fixed;
+            z-index: 3000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+
+        /* --- NAVBAR --- */
+        .navbar { background: white; box-shadow: 0 2px 15px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 1000; transition: var(--transition); }
+        .navbar.scrolled { padding: 5px 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px); }
+        .nav-container { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
+        .logo-wrapper { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo-circle { width: 45px; height: 45px; background: var(--primary); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid var(--secondary); transition: 0.5s; }
+        .logo-wrapper:hover .logo-circle { transform: rotate(360deg); }
+        .logo-text { font-size: 1.5rem; font-weight: 800; color: var(--primary); letter-spacing: 1px; }
+        .nav-links a { text-decoration: none; color: #4B5563; font-weight: 600; margin-left: 25px; transition: var(--transition); position: relative; }
+        .nav-links a:hover { color: var(--primary); }
+
+        /* --- HERO SECTION --- */
+        .hero { height: 70vh; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1541048028917-38291eb6b995?auto=format&fit=crop&q=80&w=1000'); background-size: cover; background-position: center; background-attachment: fixed; display: flex; align-items: center; text-align: center; color: white; }
+        .hero-title { font-size: 3.5rem; font-weight: 800; margin-bottom: 20px; }
+        .promo-badge { background: var(--secondary); color: #000; padding: 12px 25px; border-radius: 50px; font-weight: 800; display: inline-block; }
+
+        /* --- PRODUCTS --- */
+        .products { padding: 80px 0; background: white; }
+        .section-header { text-align: center; margin-bottom: 50px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .product-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.05); transition: var(--transition); border: 1px solid #eee; }
+        .product-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(139,0,0,0.15); }
+        .product-card img { width: 100%; height: 220px; object-fit: cover; }
+        .product-info { padding: 25px; text-align: center; }
+        .price-tag { display: inline-block; background: var(--light); color: var(--primary); padding: 5px 15px; border-radius: 50px; font-weight: 700; margin-bottom: 15px; }
+        
+        .btn-order { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-order:hover { background: #660000; }
+
+        /* --- ULASAN / REVIEWS --- */
+        .review-section { padding: 80px 0; background: #fff; }
+        .review-container { background: var(--light); padding: 40px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+        .star-rating { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; cursor: pointer; }
+        .star-rating i { font-size: 1.8rem; color: #ddd; transition: 0.2s; }
+        .star-rating i.active { color: var(--secondary); }
+        
+        .review-form { max-width: 600px; margin: 0 auto 50px auto; text-align: center; }
+        .review-input-group { display: flex; flex-direction: column; gap: 15px; }
+        .review-input-group input, .review-input-group textarea { width: 100%; padding: 12px; border: 1.5px solid #eee; border-radius: 12px; font-family: inherit; }
+        .btn-submit-review { background: var(--primary); color: white; border: none; padding: 12px 30px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; align-self: center; }
+
+        .reviews-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .review-item { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); border-left: 5px solid var(--secondary); animation: fadeIn 0.5s ease; }
+        .review-name { font-weight: 700; display: block; margin-bottom: 5px; }
+        .review-stars { color: var(--secondary); font-size: 0.8rem; margin-bottom: 10px; }
+
+        /* --- FLOATING WA --- */
+        .wa-float { position: fixed; bottom: 30px; right: 30px; background: #25d366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 2px 5px 15px rgba(0,0,0,0.3); z-index: 1000; transition: 0.3s; text-decoration: none; }
+        .wa-float:hover { transform: scale(1.1) rotate(10deg); }
+
+        /* --- MODAL --- */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 2000; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .modal.show { opacity: 1; pointer-events: auto; }
+        .modal-content { background: white; width: 90%; max-width: 500px; padding: 35px; border-radius: 25px; transform: scale(0.8); transition: 0.3s; }
+        .modal.show .modal-content { transform: scale(1); }
+
+        /* --- ANIMASI --- */
+        .reveal { opacity: 0; transform: translateY(30px); transition: 0.8s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        footer { background: var(--primary); color: white; text-align: center; padding: 50px 0; }
+        @media (max-width: 768px) { .hero-title { font-size: 2.5rem; } .nav-links { display: none; } }
+    </style>
+</head>
+<body>
+
+    <div id="toast">Pesan terkirim!</div>
+
+    <a href="https://wa.me/6282143934463" class="wa-float" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <nav class="navbar" id="mainNav">
+        <div class="container nav-container">
+            <a href="#" class="logo-wrapper">
+                <div class="logo-circle"><img src="logo.png" alt="" style="height: 50px;"></div>
+                <span class="logo-text">ANEKA SOSIS</span>
+            </a>
+            <div class="nav-links">
+                <a href="#order">Produk</a>
+                <a href="#ulasan">Ulasan</a>
+                <a href="#tentang">Tentang</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <h1 class="hero-title">Sosis Premium Rasa Juara</h1>
+            <p style="font-size: 1.2rem; margin-bottom: 25px;">Kelezatan hotel bintang lima, kini hadir di meja makan Anda.</p>
+            <div class="promo-badge">🎁 DISKON 20% PEMBELIAN PERTAMA</div>
+        </div>
+    </section>
+
+    <section id="order" class="products container">
+        <div class="section-header reveal">
+            <h2 style="font-size: 2.2rem; color: var(--primary);">Menu Pilihan</h2>
+            <p>Pilih sosis favoritmu dan rasakan bedanya!</p>
+        </div>
+        <div class="product-grid">
+            <div class="product-card reveal">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNybWZL3LfMkXKE_kIkG2vtAqu56qF4uuWT12UH_sh6YzL2-1odx1qMso&s=10" alt="Sosis Bakar">
+                <div class="product-info">
+                    <h3>Sosis Bakar Jumbo</h3>
+                    <div class="price-tag">Rp 15.000</div>
+                    <button onclick="openOrderModal('Sosis Bakar Jumbo', 15000)" class="btn-order">
+                        <i class="fas fa-shopping-cart"></i> Pesan Sekarang
+                    </button>
+                </div>
+            </div>
+            <div class="product-card reveal">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSz55GBEUVroNHcZ1W3rEKGC9azJ7faQbpSCSWbwf4oP-idMErcryUtWnE&s=10" alt="Sosis Keju">
+                <div class="product-info">
+                    <h3>Sosis Keju Meleleh</h3>
+                    <div class="price-tag">Rp 18.000</div>
+                    <button onclick="openOrderModal('Sosis Keju Meleleh', 18000)" class="btn-order">
+                        <i class="fas fa-shopping-cart"></i> Pesan Sekarang
+                    </button>
+                </div>
+            </div>
+            <div class="product-card reveal">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCWnKsY80QGElM8y2tyNl12C_SY7LUkyHqF_CDAATmEsp453DY2k3aOiCd&s=10" alt="Sosis Black Pepper">
+                <div class="product-info">
+                    <h3>Sosis Black Pepper</h3>
+                    <div class="price-tag">Rp 17.000</div>
+                    <button onclick="openOrderModal('Sosis Black Pepper', 17000)" class="btn-order">
+                        <i class="fas fa-shopping-cart"></i> Pesan Sekarang
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="ulasan" class="review-section">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 40px; color: var(--primary);">Ulasan Pelanggan</h2>
+            <div class="review-container">
+                <div class="review-form reveal">
+                    <h3>Berikan Bintang & Ulasan Kakak 🙏</h3>
+                    <div class="star-rating" id="starRating">
+                        <i class="fas fa-star" data-rating="1"></i>
+                        <i class="fas fa-star" data-rating="2"></i>
+                        <i class="fas fa-star" data-rating="3"></i>
+                        <i class="fas fa-star" data-rating="4"></i>
+                        <i class="fas fa-star" data-rating="5"></i>
+                    </div>
+                    <div class="review-input-group">
+                        <input type="text" id="revName" placeholder="Nama Anda">
+                        <textarea id="revText" rows="3" placeholder="Bagaimana rasa sosis kami?"></textarea>
+                        <button class="btn-submit-review" onclick="addReview()">Kirim Ulasan</button>
+                    </div>
+                </div>
+                <div class="reviews-list" id="reviewsList">
+                    <div class="review-item">
+                        <span class="review-name">Bunda Ratna</span>
+                        <div class="review-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                        <p>"Anak-anak suka sekali sosis kejunya, beneran lumer!"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tentang" class="container reveal" style="padding: 80px 0;">
+        <div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: center;">
+            <img src="logo.png" style="flex: 1; min-width: 300px; border-radius: 20px; box-shadow: 15px 15px 0 var(--secondary);">
+            <div style="flex: 1; min-width: 300px;">
+                <h2 style="color: var(--primary); font-size: 2rem;">Kenapa Memilih Kami?</h2>
+                <p>Kami menggunakan 100% daging sapi/ayam pilihan tanpa pengawet berbahaya. Higienis, Halal, dan Halus teksturnya.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Aneka Sosis - Lezat & Praktis</p>
+        <p>Hubungi Kami: +62 821 4393 4463</p>
+    </footer>
+
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle" style="color: var(--primary);">Detail Pesanan</h2>
+            <div class="review-input-group" style="margin-top: 20px;">
+                <input type="text" id="custName" placeholder="Nama Lengkap">
+                <input type="tel" id="custPhone" placeholder="Nomor WhatsApp">
+                <textarea id="address" rows="3" placeholder="Alamat Pengiriman"></textarea>
+                <div style="display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 15px; border-radius: 12px;">
+                    <span>Jumlah:</span>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button onclick="updateQty(-1)" style="width:30px; border:none; border-radius:50%; cursor:pointer;">-</button>
+                        <input type="number" id="qty" value="1" readonly style="width:40px; text-align:center; border:none; background:none; font-weight:bold;">
+                        <button onclick="updateQty(1)" style="width:30px; border:none; border-radius:50%; cursor:pointer;">+</button>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 1.2rem; margin: 10px 0;">
+                    <span>Total:</span>
+                    <span id="totalPriceDisplay" style="color: var(--primary);">Rp 0</span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="closeModal()" style="flex:1; padding:12px; border:none; border-radius:10px; cursor:pointer;">Batal</button>
+                    <button id="btnWA" onclick="sendToWA()" style="flex:2; padding:12px; border:none; border-radius:10px; background:#16A34A; color:white; font-weight:bold; cursor:pointer;">Kirim ke WA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- LOGIKA NOTIFIKASI ---
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.innerText = msg; t.className = "show";
+            setTimeout(() => t.className = "", 3000);
+        }
+
+        // --- LOGIKA ULASAN ---
+        let selectedRating = 0;
+        const stars = document.querySelectorAll('#starRating i');
+        stars.forEach(s => {
+            s.onclick = () => {
+                selectedRating = s.dataset.rating;
+                stars.forEach(st => st.className = st.dataset.rating <= selectedRating ? 'fas fa-star active' : 'far fa-star');
+            }
+        });
+
+        function addReview() {
+            const name = document.getElementById('revName').value;
+            const text = document.getElementById('revText').value;
+            if(!name || !text || selectedRating == 0) return showToast("Lengkapi ulasan Kakak ya 🙏");
+            
+            const item = document.createElement('div');
+            item.className = 'review-item';
+            let sHTML = ''; for(let i=1; i<=5; i++) sHTML += i <= selectedRating ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+            item.innerHTML = `<span class="review-name">${name}</span><div class="review-stars" style="color:#EAB308">${sHTML}</div><p>"${text}"</p>`;
+            document.getElementById('reviewsList').prepend(item);
+            document.getElementById('revName').value = ""; document.getElementById('revText').value = "";
+            selectedRating = 0; stars.forEach(st => st.className = 'far fa-star');
+            showToast("Terima kasih ulasannya Kak! 😊");
+        }
+
+        // --- LOGIKA PEMESANAN ---
+        let curPrice = 0; let curItem = "";
+        function openOrderModal(n, p) {
+            curItem = n; curPrice = p;
+            document.getElementById('modalTitle').innerText = "Pesan " + n;
+            document.getElementById('qty').value = 1; updatePrice();
+            document.getElementById('orderModal').classList.add('show');
+        }
+        function closeModal() { document.getElementById('orderModal').classList.remove('show'); }
+        function updateQty(v) {
+            let q = document.getElementById('qty');
+            let n = parseInt(q.value) + v;
+            if(n >= 1 && n <= 20) { q.value = n; updatePrice(); }
+        }
+        function updatePrice() {
+            let total = parseInt(document.getElementById('qty').value) * curPrice;
+            document.getElementById('totalPriceDisplay').innerText = "Rp " + total.toLocaleString('id-ID');
+        }
+
+        function sendToWA() {
+            const n = document.getElementById('custName').value;
+            const ph = document.getElementById('custPhone').value;
+            const ad = document.getElementById('address').value;
+            if(!n || !ph || !ad) return showToast("Mohon isi data lengkap ya Kak 🙏");
+            
+            const btn = document.getElementById('btnWA');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            
+            const msg = `Halo Aneka Sosis, saya ingin pesan:\n\n*Item:* ${curItem}\n*Jumlah:* ${document.getElementById('qty').value}\n*Total:* ${document.getElementById('totalPriceDisplay').innerText}\n\n--- Data ---\n*Nama:* ${n}\n*Alamat:* ${ad}`;
+            
+            setTimeout(() => {
+                window.open(`https://wa.me/6282143934463?text=${encodeURIComponent(msg)}`, '_blank');
+                btn.innerText = 'Kirim ke WA';
+                closeModal();
+                showToast("Membuka WhatsApp...");
+            }, 800);
+        }
+
+        // --- SCROLL REVEAL ---
+        const obs = new IntersectionObserver((es) => {
+            es.forEach(e => { if(e.isIntersecting) e.target.classList.add('active'); });
+        }, {threshold: 0.1});
+        document.querySelectorAll('.reveal').forEach(r => obs.observe(r));
+
+        window.onclick = (e) => { if(e.target.className == 'modal show') closeModal(); }
+    </script>
+</body>
+</html>
